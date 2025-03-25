@@ -24,13 +24,15 @@ class ShipmentIdentityPlugin
         ShipmentIdentity $subject,
         $result
     ) {
-        if ($this->emailBccFlag->getFlag()) {
-            if (!$result) {
-                $result = [];
+        if ($this->config->isEnabled()) {
+            if ($this->emailBccFlag->getFlag()) {
+                if (!$result) {
+                    $result = [];
+                }
+                
+                $result[] = $this->config->getShipmentBccEmail();
+                $result = array_unique($result);
             }
-            
-            $result[] = $this->config->getShipmentBccEmail();
-            $result = array_unique($result);
         }
 
         return $result;

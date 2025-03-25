@@ -29,19 +29,23 @@ class ShipmentSenderPlugin
         $forceSyncMode = false
     ) {
         try {
-            $this->emailBccFlag->setFlag(
-                $this->trustPilotShipmentValidator->isValid($shipment)
-            );
+            if ($isEnabled = $this->config->isEnabled()) {
+                $this->emailBccFlag->setFlag(
+                    $this->trustPilotShipmentValidator->isValid($shipment)
+                );
+            }
 
             $result = $proceed($shipment, $forceSyncMode);
 
-            if ($this->emailBccFlag->getFlag()) {
-                $shipment->getOrder()->addStatusHistoryComment(
-                    sprintf(
-                        'TrustPilot email sent via BCC to %s',
-                        $this->getShipmentBccEmail()
-                    )
-                )->setIsCustomerNotified(false)->save();
+            if ($isEnabled) {
+                if ($this->emailBccFlag->getFlag()) {
+                    $shipment->getOrder()->addStatusHistoryComment(
+                        sprintf(
+                            'TrustPilot email sent via BCC to %s',
+                            $this->getShipmentBccEmail()
+                        )
+                    )->setIsCustomerNotified(false)->save();
+                }
             }
 
             return $result;

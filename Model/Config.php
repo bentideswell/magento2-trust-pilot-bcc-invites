@@ -10,9 +10,18 @@ class Config
      * 
      */
     public function __construct(
-        private string $username,
-        private string $bccEmail
+        private string $username = '',
+        private string $bccEmail = ''
     ) {
+    }
+
+    /**
+     * 
+     */
+    public function isEnabled(): bool
+    {
+        return $this->getShipmentBccEmail()
+                && strpos($this->getShipmentBccEmail(), '@') !== false;
     }
 
     /**
