@@ -15,8 +15,8 @@ class ShipmentSenderPlugin
     public function __construct(
         private \FishPig\TrustPilotBccInvites\Model\Sales\Order\Shipment\Validator $trustPilotShipmentValidator,
         private \FishPig\TrustPilotBccInvites\Model\Sales\Order\Shipment\Email\BccFlag $emailBccFlag,
+        private \FishPig\TrustPilotBccInvites\Model\Config $config
     ) {
-
     }
 
     /**
@@ -33,8 +33,8 @@ class ShipmentSenderPlugin
                 $this->trustPilotShipmentValidator->isValid($shipment)
             );
 
-            return $proceed($shipment, $forceSyncMode);
-        } finally {
+            $result = $proceed($shipment, $forceSyncMode);
+
             if ($this->emailBccFlag->getFlag()) {
                 $shipment->getOrder()->addStatusHistoryComment(
                     sprintf(
@@ -44,6 +44,8 @@ class ShipmentSenderPlugin
                 )->setIsCustomerNotified(false)->save();
             }
 
+            return $result;
+        } catch (\Throwable $e) {
             $this->emailBccFlag->setFlag(false);
         }
     }
@@ -53,8 +55,6 @@ class ShipmentSenderPlugin
      */
     private function getShipmentBccEmail()
     {
-        return \Magento\Framework\App\ObjectManager::getInstance()
-            ->get(\FW\TrustPilot\Model\Config::class)
-            ->getShipmentBccEmail();
+        return $this->config->getShipmentBccEmail();
     }
 }
